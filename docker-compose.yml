@@ -1,0 +1,39 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: ${PROJECT_NAME}_postgres
+    restart: "no"
+    env_file:
+      - .env
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d
+
+  backend:
+    build: ./backend/burgerlab-api
+    container_name: ${PROJECT_NAME}_backend
+    restart: "no"
+    env_file:
+      - ./backend/burgerlab-api/.env
+    ports:
+      - "${BACKEND_PORT}:8080"
+    depends_on:
+      - postgres
+
+  frontend:
+    build: ./frontend
+    container_name: ${PROJECT_NAME}_frontend
+    restart: "no"
+    env_file:
+      - ./frontend/.env
+    ports:
+      - "${FRONTEND_PORT}:3000"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
